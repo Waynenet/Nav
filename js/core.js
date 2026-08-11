@@ -29,26 +29,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // 模块一: 内容渲染函数
 function renderContent() {
-    fetch('js/data.json')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP 错误！状态: ${response.status}. 无法加载 'js/data.json'`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data || !data.pageData) {
-                throw new Error("JSON 数据格式不正确或缺少必要的配置部分。");
-            }
-
-            const searchItem = data.pageData.find(item => item.id === 'search');
+    loadPageData()
+        .then(pageData => {
+            const searchItem = pageData.find(item => item.id === 'search');
             const searchConfig = searchItem ? searchItem.searchConfig : null;
             if (!searchConfig) {
                 throw new Error("在 pageData 中未找到有效的 searchConfig。");
             }
 
-            renderMainMenu(data.pageData);
-            renderBookmarkCategories(data.pageData);
+            renderMainMenu(pageData);
+            renderBookmarkCategories(pageData);
             renderSearchSection(searchConfig);
             attachSearchEventListeners(searchConfig);
 
@@ -64,7 +54,39 @@ function renderContent() {
                 contentContainer.innerHTML = '<p style="text-align: center; color: red;">加载内容失败！请按F12查看控制台中的详细错误信息。</p>';
             }
         });
+}
 
+// 优先从 Cloudflare D1 读取数据，失败时回退到静态 js/data.json
+function loadPageData() {
+    return fetch('api/data')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`D1 接口不可用，状态: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data || !data.pageData) {
+                throw new Error("D1 数据格式不正确或缺少 pageData。");
+            }
+            return data.pageData;
+        })
+        .catch(() => {
+            return fetch('js/data.json')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP 错误！状态: ${response.status}. 无法加载 'js/data.json'`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || !data.pageData) {
+                        throw new Error("JSON 数据格式不正确或缺少必要的配置部分。");
+                    }
+                    return data.pageData;
+                });
+        });
+}
     function renderMainMenu(pageData) {
         const menuContainer = document.getElementById('main-menu');
         if (!menuContainer) return;
@@ -282,7 +304,6 @@ function renderContent() {
             });
         }
     }
-}
 
 // 模块二: 页面交互功能
 function initializePageFunctions() {

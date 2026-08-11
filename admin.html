@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>WayneのNav 管理后台</title>
+    <link rel="shortcut icon" type="image/x-icon" href="images/wayne.png"/>
+    <link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <header class="admin-header">
+        <div class="brand">
+            <img src="images/wayne.png" alt="logo" class="brand-logo">
+            <span>WayneのNav 管理后台</span>
+        </div>
+        <div class="header-actions">
+            <a class="btn" href="index.html" target="_blank"><i class="ti ti-home"></i> 返回主站</a>
+            <button class="btn" id="logout-btn" type="button" hidden><i class="ti ti-logout"></i> 登出</button>
+            <span class="conn-status" id="conn-status"></span>
+        </div>
+    </header>
+
+    <main class="admin-main">
+        <section id="login-view" class="login-view" hidden>
+            <form id="login-form" class="login-card">
+                <h1>管理员登录</h1>
+                <p class="muted">输入 Cloudflare Pages 环境变量中配置的 ADMIN_TOKEN。</p>
+                <label for="login-token">Token</label>
+                <input id="login-token" type="password" autocomplete="current-password" placeholder="ADMIN_TOKEN" required>
+                <button class="btn primary" type="submit">登录</button>
+                <div id="login-error" class="error" hidden></div>
+            </form>
+        </section>
+
+        <section id="admin-view" class="admin-view" hidden>
+            <aside class="admin-sidebar">
+                <div class="panel-head">
+                    <h2>分类</h2>
+                </div>
+                <div id="category-tree" class="category-tree"></div>
+            </aside>
+
+            <section class="admin-content">
+                <div id="category-detail" class="panel">
+                    <div class="empty-state"><i class="ti ti-folder-open"></i><p>请选择一个分类</p></div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div id="toast" class="toast" hidden></div>
+    <script src="js/admin.js"></script>
+</body>
+</html>
