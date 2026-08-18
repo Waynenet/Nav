@@ -81,6 +81,7 @@ Cloudflare 官方 “Deploy to Cloudflare” 按钮目前只支持 Workers 应�
      ```
 
    - `db:seed-if-empty` 只会在四张表都为空时写入 `js/data.json` 的种子数据，不会覆盖已有数据；想强制全量覆盖时改用 `npm run db:sync -- --remote`。
+   - 也可以不跑本地命令，直接手动触发 `Sync D1 Data` Action：它会先建表并在空库时播种，再全量同步 `js/data.json`；前提是在 GitHub 仓库配置好 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_D1_DATABASE_ID` 三个 Secrets。
 8. 回到 Pages 项目触发一次重新部署，或直接访问生产 URL。
 
 之后每次 push 到 `main`，Cloudflare Git 集成都会自动重新构建部署。
@@ -145,7 +146,7 @@ npm run dev
 - `npm run db:sync [-- --remote]`：用本地 `js/data.json` 全量覆盖 D1（默认本地，远程加 `--remote`）
 - `npm run db:export [-- --remote]`：从 D1 导出并覆盖本地 `js/data.json`
 - 同步方向明确：`db:sync` 会覆盖 D1 当前在线修改，`db:export` 会覆盖本地文件
-- `.github/workflows/sync-d1.yml` 提供手动触发的 CI 同步，需配置 Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_D1_DATABASE_ID`
+- `.github/workflows/sync-d1.yml` 提供手动触发的 CI 同步，会先执行建表迁移并在空库时播种，再全量同步 `js/data.json`；需配置 Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_D1_DATABASE_ID`
 - D1 命令按数据库名 `nav` 执行；方式二（GitHub Actions）部署时 `wrangler.toml` 保持占位符，由 `CLOUDFLARE_D1_DATABASE_ID` 临时注入；方式一（Dashboard Git 集成）必须把真实 `database_id` 填入 `wrangler.toml`
 
 ## 关于天气

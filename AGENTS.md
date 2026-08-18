@@ -105,7 +105,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 - `npm run db:sync -- --remote` 会用本地 `js/data.json` 覆盖 D1 当前数据；`npm run db:export -- --remote` 会用 D1 数据覆盖本地 `js/data.json`，运行前会提示确认
 - 管理后台与写接口使用 Bearer Token 认证，`ADMIN_TOKEN` 配置在 Cloudflare Pages 环境变量/Secret 中；未配置时 `/api/data` 仍可读取 D1，但写接口返回 503
 - 本地调试管理后台时，在项目根目录创建 .dev.vars 并写入 ADMIN_TOKEN=...，验证天气时同时写入 AMAP_KEY=...，该文件已被 gitignore
-- CI 同步工作流默认仅 `workflow_dispatch` 手动触发，不会在 push 时自动覆盖在线数据；它同样需要 `CLOUDFLARE_D1_DATABASE_ID` Secret 注入占位符
+- CI 同步工作流默认仅 `workflow_dispatch` 手动触发，不会在 push 时自动覆盖在线数据；它先执行建表迁移并在空库时播种，再全量同步本地数据；需要 `CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_D1_DATABASE_ID` 三个 Secrets
 - `.github/workflows/deploy.yml` 会在 main 推送时自动部署：注入 D1 database_id、执行 `npm run db:seed-if-empty -- --remote`、部署 Pages，并用 GitHub Secrets `AMAP_KEY`、`ADMIN_TOKEN` 同步 Cloudflare Pages Secrets
 - `search` 与 `about` 分类不可删除，且其 `slug` 不可修改，以保证主站搜索区和“关于本站”锚点正常
 

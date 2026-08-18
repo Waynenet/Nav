@@ -24,6 +24,12 @@ jobs:
         env:
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
 
+      - name: 建表并播种（空库时）
+        run: npm run db:seed-if-empty -- --remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: 同步 data.json 到 Cloudflare D1
         run: npm run db:sync -- --remote
         env:
