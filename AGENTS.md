@@ -112,7 +112,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 
 - 推送提交时检查最新提交信息，提交消息匹配 `Release vX.Y.Z`（大小写不敏感）才触发发布
 - 发布流程：查找上一个 Tag、创建新 Tag、按 Conventional Commits 前缀（`feat`、`fix`、`docs`、`perf` 等）生成更新日志、发布 GitHub Release
-- 工作流当前监听 `master` 分支，而仓库本地默认分支为 `main`，改动发布相关配置时需确认分支名匹配
+- 工作流监听 `main` 分支，发布提交需直接推送到该分支；改动发布相关配置时需确认分支名匹配
 
 ## 注意事项
 
