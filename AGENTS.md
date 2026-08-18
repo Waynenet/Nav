@@ -94,6 +94,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 ## 开发与验证
 
 - 无构建流程，修改 `index.html`、`css/core.css`、`js/core.js`、`js/data.json` 后刷新浏览器即可
+- Wrangler 4 要求 Node.js >= 22；本地运行 `dev`/`deploy`/D1 相关 npm scripts 和 GitHub Actions 均使用 Node.js 22+
 - 本地预览建议启动静态服务器，例如：`python -m http.server 8000`；直接打开或普通静态服务器下天气模块不可用，需要验证 Cloudflare Functions（含 `/api/weather`）时使用 `npm install` 后执行 `npm run db:init -- --local`、`npm run db:seed-if-empty -- --local`、`npm run dev`
 - 项目无自动化测试；改动后建议手动验证菜单渲染、搜索切换、日/夜间模式、响应式布局、天气/时间显示，以及 `/api/data` 与 `js/data.json` 的数据一致性
 - 所有源码文件均为 UTF-8 编码；在 Windows PowerShell 中读取中文内容时使用 `Get-Content -Encoding UTF8`，编辑和保存时保持 UTF-8，避免中文乱码

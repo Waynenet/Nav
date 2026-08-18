@@ -73,6 +73,8 @@ Cloudflare 官方 “Deploy to Cloudflare” 按钮目前只支持 Workers 应�
      npm install
      ```
 
+   - 本机需要 Node.js 22+（Wrangler 4 要求），否则 `npm run deploy` / D1 命令会报版本过低错误。
+
    - 使用数据库名直接初始化（部署所需的真实 `database_id` 已在第 4 步填入 `wrangler.toml`）：
 
      ```bash
@@ -123,6 +125,8 @@ Cloudflare 官方 “Deploy to Cloudflare” 按钮目前只支持 Workers 应�
 | 方式二：GitHub Actions | GitHub Actions Secrets，workflow 自动同步到 Pages |
 
 ### 本地开发
+
+> 需要 Node.js 22+（Wrangler 4 要求），可使用 `nvm use 22` 或升级本机 Node.js。
 
 ```bash
 npm run db:init -- --local

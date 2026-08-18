@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "WayneのNav - 纯静态个人导航网站（Cloudflare Pages + D1）",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "wrangler pages dev .",
     "deploy": "wrangler pages deploy . --project-name=nav",
