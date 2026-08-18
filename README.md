@@ -6,13 +6,12 @@
 
 [![Version](https://img.shields.io/github/v/release/Waynenet/Nav?color=00aaff&logo=github)](https://github.com/Waynenet/Nav/releases/latest)
 [![License](https://img.shields.io/github/license/Waynenet/Nav?color=orange&logo=gnu)](LICENSE)
-[![Channel](https://img.shields.io/badge/Telegram-Channel-blue?logo=telegram)](https://t.me/wayne_3301)
 
 一个纯静态导航网站，精挑细选优质书签，无任何广告行为。
 
 ## Demo
 
-➡️ [WayneのNav]()             
+➡️ [WayneのNav](https://nav.cys.cc.cd/)             
 
 ## 功能特性
 
@@ -33,15 +32,11 @@
 - 管理后台：`/admin.html`，使用 `ADMIN_TOKEN` Bearer Token 认证
 - D1 表：`categories` / `bookmarks` / `search_groups` / `search_items`
 
-### 一键部署
-
-Cloudflare 官方 “Deploy to Cloudflare” 按钮目前只支持 Workers 应用，不支持带 `functions/` 的 Pages 项目；本项目是 Pages + D1，所以下面的按钮会带你直达 Cloudflare 控制台的 Workers & Pages 页面，再按「方式一」创建 Pages 项目即可：
-
-[![Deploy to Cloudflare](https://img.shields.io/badge/Deploy%20to%20Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://dash.cloudflare.com/?to=/:account/workers-and-pages)
+## 部署
 
 初次部署建议先 Fork 本仓库，再把 Fork 后的仓库连接到 Cloudflare。高德 Key、`ADMIN_TOKEN` 不会写入仓库；方式一需要把 D1 `database_id` 填进 Fork 的 `wrangler.toml`（它不是访问凭据，但若不想公开，请把 Fork 设为 Private，或改用方式二）。
 
-### 方式一：Cloudflare Dashboard Git 集成（推荐，无需 GitHub Actions）
+### 方式一：Cloudflare Dashboard Git 集成（无需 GitHub Actions）
 
 适合不想配置 GitHub Actions 的初次部署者，Secrets 直接配置在 Cloudflare Pages 侧。
 
@@ -167,9 +162,6 @@ npm run dev
 ## 特别鸣谢
 
 - [WebStackPage](https://github.com/WebStackPage/WebStackPage.github.io)
-- [ChatGPT](https://chat.openai.com/)
-- [Google AI Studio](https://aistudio.google.com/)
-- [DeepSeek](https://www.deepseek.com/)
 - [今日诗词 API](https://www.jinrishici.com/)
 - [新逸Cary API](https://api.xinac.net/)
 - [缙哥哥博客 API](https://www.dujin.org/3618.html)
