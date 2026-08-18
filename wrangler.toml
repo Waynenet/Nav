@@ -5,4 +5,5 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "nav"
+# 真实 ID 通过 GitHub Secret CLOUDFLARE_D1_DATABASE_ID 在 CI 中注入，请勿提交
 database_id = "REPLACE_WITH_D1_DATABASE_ID"

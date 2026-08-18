@@ -22,13 +22,14 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 | `js/core.js` | 全部前端逻辑：内容渲染、搜索、菜单动画、主题、星幕、天气、时间、外观设置 |
 | `js/admin.js` | 管理后台逻辑：登录、分类/书签/搜索配置增删改排序 |
 | `js/data.json` | 本地/回退数据源：搜索站点、导航菜单、书签分类与条目；Cloudflare 部署时可被 D1 数据覆盖 |
-| `functions/` | Cloudflare Pages Functions：`/api/data` 读取接口与 `/api/admin/*` 管理接口 |
+| `functions/` | Cloudflare Pages Functions：`/api/data` 读取接口、`/api/weather` 天气代理与 `/api/admin/*` 管理接口 |
 | `migrations/` | D1 建表 SQL |
 | `scripts/` | D1 数据同步与导出脚本 |
 | `wrangler.toml` | Cloudflare 部署与 D1 binding 配置 |
 | `package.json` | 仅用于 Cloudflare 相关 npm scripts 与 `wrangler` 开发依赖 |
 | `images/` | 本地静态资源：logo、favicon、默认 favicon、微信/支付宝打赏二维码 |
 | `.github/workflows/release.yml` | 发布工作流：匹配发布提交后自动打 Tag 并生成 GitHub Release |
+| `.github/workflows/deploy.yml` | 部署工作流：注入 D1 database_id、部署 Pages、同步 Pages Secrets |
 | `.github/workflows/sync-d1.yml` | 可选手动触发的 D1 数据同步工作流 |
 | `README.md` | 面向用户的项目说明 |
 
@@ -74,7 +75,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 - 日/夜间模式：根据系统偏好、时间段和 `localStorage` 中的 `night` 值切换
 - 星空背景：夜间模式在 Canvas 上绘制普通星、巨星和彗星
 - 随机背景：桌面端使用 Bing 图片背景，移动端使用独立 Bing 图片接口，加载失败时回退为纯色
-- 实时天气：通过高德 IP 定位与天气 API 显示城市、天气、温度和风力
+- 实时天气：通过 `/api/weather` 代理高德 IP 定位与天气 API 显示城市、天气、温度和风力，Key 只存于服务端 Secret
 - Cloudflare 数据托管：页面优先从 `/api/data` 读取 D1 数据，接口失败时自动回退 `js/data.json`
 - 数据管理后台：`/admin.html` 使用 `ADMIN_TOKEN` 登录，侧边栏只展示顶层分类，子分类的增删改与排序在右侧选中大类后操作
 - 动态时间：侧边栏与页脚显示当前时间、星期
@@ -84,7 +85,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 ## 主要外部依赖
 
 - CDN（jsDelivr）：Bootstrap 5、Tabler Icons、iziToast、GSAP、lozad、LXGW WenKai 字体、UnidreamLED 字体
-- 高德开放平台：`restapi.amap.com` 的 IP 定位和天气预报接口，Key 在 `js/core.js` 的 `setupFooterInfo()` 中（`A_MAP_KEY`）
+- 高德开放平台：`restapi.amap.com` 的 IP 定位和天气预报接口，由 `functions/api/weather.js` 代理，Key 来自 Pages Secret/环境变量 `AMAP_KEY`
 - 新逸Cary API：`api.xinac.net/icon/` 获取网站 favicon
 - Bing 背景图 API：桌面端 `60s.748541.xyz/v2/bing`，移动端 `api.dujin.org/bing/m.php`
 - 今日诗词 SDK：`sdk.jinrishici.com` 在“关于本站”区域展示每日诗词
@@ -93,17 +94,18 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 ## 开发与验证
 
 - 无构建流程，修改 `index.html`、`css/core.css`、`js/core.js`、`js/data.json` 后刷新浏览器即可
-- 本地预览建议启动静态服务器，例如：`python -m http.server 8000`；需要验证 Cloudflare Functions 时使用 `npm install` 后执行 `npm run db:init -- --local`、`npm run db:sync -- --local`、`npm run dev`
+- 本地预览建议启动静态服务器，例如：`python -m http.server 8000`；直接打开或普通静态服务器下天气模块不可用，需要验证 Cloudflare Functions（含 `/api/weather`）时使用 `npm install` 后执行 `npm run db:init -- --local`、`npm run db:sync -- --local`、`npm run dev`
 - 项目无自动化测试；改动后建议手动验证菜单渲染、搜索切换、日/夜间模式、响应式布局、天气/时间显示，以及 `/api/data` 与 `js/data.json` 的数据一致性
 - 所有源码文件均为 UTF-8 编码；在 Windows PowerShell 中读取中文内容时使用 `Get-Content -Encoding UTF8`，编辑和保存时保持 UTF-8，避免中文乱码
 
 ### Cloudflare D1 注意事项
 
-- `wrangler.toml` 中的 `database_id` 是占位符，部署前需执行 `wrangler d1 create nav` 并用真实 ID 替换
+- `wrangler.toml` 中的 `database_id` 是占位符，部署前需执行 `wrangler d1 create nav` 并把真实 ID 配置为 GitHub Secret `CLOUDFLARE_D1_DATABASE_ID`，由 `.github/workflows/deploy.yml` 在 CI 中临时注入，真实 ID 不提交到仓库
 - 管理后台与写接口使用 Bearer Token 认证，`ADMIN_TOKEN` 配置在 Cloudflare Pages 环境变量/Secret 中；未配置时 `/api/data` 仍可读取 D1，但写接口返回 503
-- 本地调试管理后台时，在项目根目录创建 .dev.vars 并写入 ADMIN_TOKEN=...，该文件已被 gitignore
+- 本地调试管理后台时，在项目根目录创建 .dev.vars 并写入 ADMIN_TOKEN=...，验证天气时同时写入 AMAP_KEY=...，该文件已被 gitignore
 - `npm run db:sync -- --remote` 会用本地 `js/data.json` 覆盖 D1 当前数据；`npm run db:export -- --remote` 会用 D1 数据覆盖本地 `js/data.json`，运行前会提示确认
-- CI 同步工作流默认仅 `workflow_dispatch` 手动触发，不会在 push 时自动覆盖在线数据
+- CI 同步工作流默认仅 `workflow_dispatch` 手动触发，不会在 push 时自动覆盖在线数据；它同样需要 `CLOUDFLARE_D1_DATABASE_ID` Secret 注入占位符
+- `.github/workflows/deploy.yml` 会在 main 推送时自动部署，并用 GitHub Secrets `AMAP_KEY`、`ADMIN_TOKEN` 同步 Cloudflare Pages Secrets
 - `search` 与 `about` 分类不可删除，且其 `slug` 不可修改，以保证主站搜索区和“关于本站”锚点正常
 
 ## 发布与版本
@@ -116,6 +118,6 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 
 ## 注意事项
 
-- `js/core.js` 中硬编码了高德 API Key，如需重新部署应替换为自己的 Key，并避免把个人密钥写入公开仓库
+- 高德 API Key 已从前端移入 `/api/weather` 代理，通过 Pages Secret `AMAP_KEY` 提供；若旧 Key 曾出现在公开提交历史，应到高德控制台删除/重置后重新配置
 - `js/data.json` 是 JSON 文件，编辑后必须保持语法有效，否则首页会显示“加载内容失败”
 - 不要批量删除文件或目录；需要清理文件时一次只删除一个明确路径的文件

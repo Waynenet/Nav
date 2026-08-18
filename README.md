@@ -40,7 +40,7 @@ npm install
 npx wrangler d1 create nav
 ```
 
-把创建后返回的 `database_id` 填入 `wrangler.toml`，然后执行：
+把创建后返回的 `database_id` 填入 `wrangler.toml`（也可以不提交真实 ID，改由 GitHub Secret 注入，见下文“GitHub Secrets”），然后执行：
 
 ```bash
 npm run db:init -- --remote
@@ -58,7 +58,21 @@ npm run dev
 
 默认访问 http://localhost:8788/。
 
-本地调试管理后台时，在项目根目录创建 .dev.vars（已被 gitignore）并写入 ADMIN_TOKEN=你的本地Token。
+本地调试管理后台时，在项目根目录创建 .dev.vars（已被 gitignore）并写入 ADMIN_TOKEN=你的本地Token；需要验证天气时同时写入 AMAP_KEY=你的高德Key。
+
+### GitHub Secrets
+
+在 GitHub 仓库 `Settings -> Secrets and variables -> Actions` 中配置：
+
+| Secret | 用途 | 是否必需 |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API Token，用于部署与 D1 操作 | 是 |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare 账号 ID | 是 |
+| `CLOUDFLARE_D1_DATABASE_ID` | `wrangler d1 create nav` 返回的 database_id，CI 会替换 `wrangler.toml` 中的占位符 | 是 |
+| `AMAP_KEY` | 高德 Web 服务 Key，CI 部署后写入 Pages Secret | 否 |
+| `ADMIN_TOKEN` | 管理后台 Token，CI 部署后写入 Pages Secret | 否 |
+
+`.github/workflows/deploy.yml` 在 main 分支推送或手动触发时，会注入 D1 database_id、部署 Cloudflare Pages，并把 `AMAP_KEY`、`ADMIN_TOKEN` 同步为 Pages Secret。真实 Key 与 D1 ID 不会提交到仓库。
 
 ### 管理后台
 
@@ -71,13 +85,18 @@ npm run dev
 - `npm run db:sync [-- --remote]`：用本地 `js/data.json` 覆盖 D1（默认本地，远程加 `--remote`）
 - `npm run db:export [-- --remote]`：从 D1 导出并覆盖本地 `js/data.json`
 - 同步方向明确：`db:sync` 会覆盖 D1 当前在线修改，`db:export` 会覆盖本地文件
-- `.github/workflows/sync-d1.yml` 提供手动触发的 CI 同步，需配置 Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`
+- `.github/workflows/sync-d1.yml` 提供手动触发的 CI 同步，需配置 Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_D1_DATABASE_ID`
 
 ## 关于天气
 
-天气获取需要 `高德开放平台` 相关 API
+天气获取需要 `高德开放平台` 相关 API：
 
-- 请前往 [高德开放平台](https://lbs.amap.com/) 创建一个 Web 服务 类型的 Key，并将 Key 填入 core.js 中的 A_MAP_KEY 中，每月有5000次的免费额度。
+- 前端只请求 `/api/weather`，由 `functions/api/weather.js` 使用 Pages Secret `AMAP_KEY` 代理高德请求，Key 不会暴露给浏览器
+- 本地开发：在 `.dev.vars` 中写入 `AMAP_KEY=你的高德Key`
+- Cloudflare：在 Pages Secret 中配置 `AMAP_KEY`，或在 GitHub Secret 中配置后由 `deploy.yml` 自动同步
+- 直接打开 `index.html` 或使用普通静态服务器时没有 `/api/weather`，天气会显示加载失败；请用 `npm run dev` 本地验证或部署到 Cloudflare Pages
+- 请前往 [高德开放平台](https://lbs.amap.com/) 创建一个 Web 服务类型的 Key，每月有 5000 次的免费额度
+- 如果旧 Key 已出现在公开 Git 历史中，GitHub Secret 无法抹除历史泄露，请先到高德控制台删除/重置旧 Key，再配置新 Key
 
 ## 特别鸣谢
 

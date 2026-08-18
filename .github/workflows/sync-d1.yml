@@ -19,6 +19,11 @@ jobs:
       - name: 安装依赖
         run: npm ci
 
+      - name: 注入 D1 database_id
+        run: sed -i "s|REPLACE_WITH_D1_DATABASE_ID|${CLOUDFLARE_D1_DATABASE_ID}|g" wrangler.toml
+        env:
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+
       - name: 同步 data.json 到 Cloudflare D1
         run: npm run db:sync -- --remote
         env:
