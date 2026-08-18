@@ -8,7 +8,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 - 数据驱动：页面菜单、搜索配置、书签内容由 `js/data.json` 或 Cloudflare D1 提供，`js/core.js` 在浏览器端动态渲染；Cloudflare 部署下优先读取 D1，接口失败或 D1 为空时回退 `js/data.json`
 - 运行方式：直接打开 `index.html` 或使用任意静态文件服务器即可
 - 许可证：GPL-3.0（见 `LICENSE`）
-- 当前版本：v1.0.2（更新日期 2026-08-18，记录于 `js/core.js` 控制台输出）
+- 当前版本：v1.0.3（更新日期 2026-08-18，记录于 `js/core.js` 控制台输出）
 
 ## 目录结构
 
