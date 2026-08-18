@@ -100,7 +100,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 
 ### Cloudflare D1 注意事项
 
-- `wrangler.toml` 中的 `database_id` 是占位符；D1 命令按数据库名 `nav` 执行，本地无需填写真实 ID，GitHub Actions 部署时由 Secret `CLOUDFLARE_D1_DATABASE_ID` 临时注入
+- `wrangler.toml` 中的 `database_id` 默认是占位符；D1 命令按数据库名 `nav` 执行，本地无需填写真实 ID；方式二（GitHub Actions）部署时由 Secret `CLOUDFLARE_D1_DATABASE_ID` 临时注入；方式一（Cloudflare Dashboard Git 集成）必须把真实 ID 填入 `wrangler.toml`，因为该文件是 Pages 配置唯一来源
 - `npm run db:seed-if-empty [-- --remote]` 会先执行建表迁移，并只在四张表都为空时写入 `js/data.json` 种子数据，不会覆盖已有数据
 - `npm run db:sync -- --remote` 会用本地 `js/data.json` 覆盖 D1 当前数据；`npm run db:export -- --remote` 会用 D1 数据覆盖本地 `js/data.json`，运行前会提示确认
 - 管理后台与写接口使用 Bearer Token 认证，`ADMIN_TOKEN` 配置在 Cloudflare Pages 环境变量/Secret 中；未配置时 `/api/data` 仍可读取 D1，但写接口返回 503

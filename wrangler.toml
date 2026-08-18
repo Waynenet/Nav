@@ -5,5 +5,6 @@ pages_build_output_dir = "."
 [[d1_databases]]
 binding = "DB"
 database_name = "nav"
-# 真实 ID 通过 GitHub Secret CLOUDFLARE_D1_DATABASE_ID 在 CI 中注入，请勿提交
+# 方式二（GitHub Actions）：由 Secret CLOUDFLARE_D1_DATABASE_ID 在 CI 中临时替换，请勿提交真实 ID
+# 方式一（Cloudflare Dashboard Git 集成）：必须手动替换为真实 database_id，否则部署报 Invalid database UUID
 database_id = "REPLACE_WITH_D1_DATABASE_ID"
