@@ -8,7 +8,7 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 - 数据驱动：页面菜单、搜索配置、书签内容由 `js/data.json` 或 Cloudflare D1 提供，`js/core.js` 在浏览器端动态渲染；Cloudflare 部署下优先读取 D1，接口失败或 D1 为空时回退 `js/data.json`
 - 运行方式：直接打开 `index.html` 或使用任意静态文件服务器即可
 - 许可证：GPL-3.0（见 `LICENSE`）
-- 当前版本：v1.0.1（更新日期 2026-08-18，记录于 `js/core.js` 控制台输出）
+- 当前版本：v1.0.2（更新日期 2026-08-18，记录于 `js/core.js` 控制台输出）
 
 ## 目录结构
 
@@ -116,6 +116,23 @@ WayneのNav（仓库 `Waynenet/Nav`）是一个纯静态的个人导航网站，
 - 推送提交时检查最新提交信息，提交消息匹配 `Release vX.Y.Z`（大小写不敏感）才触发发布
 - 发布流程：查找上一个 Tag、创建新 Tag、按 Conventional Commits 前缀（`feat`、`fix`、`docs`、`perf` 等）生成更新日志、发布 GitHub Release
 - 工作流监听 `main` 分支，发布提交需直接推送到该分支；改动发布相关配置时需确认分支名匹配
+
+### 发版步骤
+
+发版时需同步修改以下四处版本号：
+
+| 文件 | 修改位置 |
+| --- | --- |
+| `package.json` | 根节点 `version` 改为 `X.Y.Z` |
+| `package-lock.json` | 根节点 `version` 与 `packages."".version` 改为 `X.Y.Z` |
+| `js/core.js` | 控制台输出的 `版 本 号：vX.Y.Z` |
+| `AGENTS.md` | 项目概览中的 `当前版本：vX.Y.Z` |
+
+然后提交并推送：
+
+- 提交信息必须为 `Release vX.Y.Z`（大小写不敏感），如 `Release v1.0.2`
+- 将提交推送到 `main` 分支后，`.github/workflows/release.yml` 会自动创建 Tag 和 GitHub Release
+- README 顶部版本徽章读取 GitHub Release，无需手动修改
 
 ## 注意事项
 

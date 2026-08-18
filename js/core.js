@@ -1024,7 +1024,7 @@ function setupFooterInfo() {
 `;
 
     const infoText = `
-版 本 号：v1.0.1
+版 本 号：v1.0.2
 更新日期：2026-08-18
 
 WayneのNav: https://nav.3301.qzz.io/

@@ -1,6 +1,6 @@
 {
   "name": "wayne-nav",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "description": "WayneのNav - 纯静态个人导航网站（Cloudflare Pages + D1）",
