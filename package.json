@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "wrangler pages dev .",
     "deploy": "wrangler pages deploy . --project-name=nav",
-    "db:init": "wrangler d1 execute DB --file=migrations/0001_init.sql",
+    "db:init": "wrangler d1 execute nav --file=migrations/0001_init.sql",
+    "db:seed-if-empty": "node scripts/seed-if-empty.mjs",
     "db:sync": "node scripts/sync-d1.mjs",
     "db:export": "node scripts/export-d1.mjs"
   },

@@ -49,7 +49,7 @@ async function main() {
 
   console.log(`正在从 D1（${target === '--remote' ? '远程' : '本地'}）导出数据...`);
   const stdout = runWrangler([
-    'd1', 'execute', 'DB',
+    'd1', 'execute', 'nav',
     `--command=${QUERIES.join('; ')}`,
     '--json',
     target

@@ -36,6 +36,9 @@ jobs:
       - name: 注入 D1 database_id
         run: sed -i "s|REPLACE_WITH_D1_DATABASE_ID|${CLOUDFLARE_D1_DATABASE_ID}|g" wrangler.toml
 
+      - name: 初始化 D1（空库时自动播种）
+        run: npm run db:seed-if-empty -- --remote
+
       - name: 部署 Cloudflare Pages
         run: npm run deploy
 

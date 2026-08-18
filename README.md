@@ -29,40 +29,69 @@
 
 项目数据已支持托管在 Cloudflare D1：
 
-- 页面优先请求 `/api/data` 读取 D1 数据，接口不可用时自动回退 `js/data.json`
+- 页面优先请求 `/api/data` 读取 D1 数据，接口不可用或 D1 为空时自动回退 `js/data.json`
 - 管理后台：`/admin.html`，使用 `ADMIN_TOKEN` Bearer Token 认证
 - D1 表：`categories` / `bookmarks` / `search_groups` / `search_items`
 
-### 首次部署
+### 一键部署
 
-```bash
-npm install
-npx wrangler d1 create nav
-```
+Cloudflare 官方 “Deploy to Cloudflare” 按钮目前只支持 Workers 应用，不支持带 `functions/` 的 Pages 项目；本项目是 Pages + D1，所以下面的按钮会带你直达 Cloudflare 控制台的 Workers & Pages 页面，再按「方式一」创建 Pages 项目即可：
 
-把创建后返回的 `database_id` 填入 `wrangler.toml`（也可以不提交真实 ID，改由 GitHub Secret 注入，见下文“GitHub Secrets”），然后执行：
+[![Deploy to Cloudflare](https://img.shields.io/badge/Deploy%20to%20Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://dash.cloudflare.com/?to=/:account/workers-and-pages)
 
-```bash
-npm run db:init -- --remote
-npm run db:sync -- --remote
-npm run deploy
-```
+初次部署建议先 Fork 本仓库，再把 Fork 后的仓库连接到 Cloudflare。高德 Key、D1 database_id、`ADMIN_TOKEN` 等敏感信息都不会写入公开仓库。
 
-### 本地开发
+### 方式一：Cloudflare Dashboard Git 集成（推荐，无需 GitHub Actions）
 
-```bash
-npm run db:init -- --local
-npm run db:sync -- --local
-npm run dev
-```
+适合不想配置 GitHub Actions 的初次部署者，Secrets 直接配置在 Cloudflare Pages 侧。
 
-默认访问 http://localhost:8788/。
+1. Fork 本仓库到自己的 GitHub 账号：https://github.com/Waynenet/Nav/fork
+2. 点击上面的「Deploy to Cloudflare」按钮登录 Cloudflare，进入 Workers & Pages。
+3. 创建 D1 数据库 `nav`：
+   - 控制台：Workers & Pages -> D1 -> Create database，名称填 `nav`，创建后复制返回的 `database_id`；
+   - 或命令行：`npx wrangler d1 create nav`，复制输出中的 `database_id`。
+4. 创建 Pages 项目：
+   - Workers & Pages -> Create application -> Pages -> Connect to Git，授权并选择你 Fork 的仓库；
+   - 如果引导你进入 Worker / Workers Builds 流程，请返回并选择 Pages，不要创建成 Worker；
+   - Production branch 选择 `main`；
+   - Build command 留空，Build output directory 填 `.`；
+   - 点击 Save and Deploy，等待首次部署完成。
+5. 在 Pages 项目中绑定 D1（重要，漏掉这一步 `/api/data` 会失败）：
+   - Pages 项目 -> Settings -> Functions -> D1 database bindings -> Add binding；
+   - Variable name 填 `DB`，D1 database 选择 `nav`。
+6. 配置 Pages Secrets：
+   - Pages 项目 -> Settings -> Variables and secrets -> Add secret；
+   - `AMAP_KEY`：高德 Web 服务 Key，不配置时天气接口返回 503；
+   - `ADMIN_TOKEN`：管理后台 Token，不配置时后台写接口返回 503。
+7. 初始化 D1 表与数据（首次部署必做）：
+   - 在本地克隆并安装依赖：
 
-本地调试管理后台时，在项目根目录创建 .dev.vars（已被 gitignore）并写入 ADMIN_TOKEN=你的本地Token；需要验证天气时同时写入 AMAP_KEY=你的高德Key。
+     ```bash
+     git clone https://github.com/你的用户名/Nav.git
+     cd Nav
+     npm install
+     ```
 
-### GitHub Secrets
+   - 使用数据库名直接初始化，不需要把 `database_id` 写进 `wrangler.toml`：
 
-在 GitHub 仓库 `Settings -> Secrets and variables -> Actions` 中配置：
+     ```bash
+     npm run db:init -- --remote
+     npm run db:seed-if-empty -- --remote
+     ```
+
+   - `db:seed-if-empty` 只会在四张表都为空时写入 `js/data.json` 的种子数据，不会覆盖已有数据；想强制全量覆盖时改用 `npm run db:sync -- --remote`。
+8. 回到 Pages 项目触发一次重新部署，或直接访问生产 URL。
+
+之后每次 push 到 `main`，Cloudflare Git 集成都会自动重新构建部署。
+
+> 注意：方式一不走 GitHub Actions，GitHub Secrets 不会被读取；`AMAP_KEY`、`ADMIN_TOKEN` 必须配置在 Cloudflare Pages 的 Variables and secrets 中。
+
+### 方式二：GitHub Actions 自动部署
+
+适合希望 push 到 `main` 后由 CI 自动部署、并由 GitHub 统一管理 Secrets 的用户。
+
+1. Fork 本仓库到自己的 GitHub 账号，并在 Cloudflare 创建 D1 数据库 `nav`（同方式一第 3 步），复制 `database_id`。
+2. 在 GitHub 仓库 `Settings -> Secrets and variables -> Actions` 中配置：
 
 | Secret | 用途 | 是否必需 |
 | --- | --- | --- |
@@ -72,7 +101,36 @@ npm run dev
 | `AMAP_KEY` | 高德 Web 服务 Key，CI 部署后写入 Pages Secret | 否 |
 | `ADMIN_TOKEN` | 管理后台 Token，CI 部署后写入 Pages Secret | 否 |
 
-`.github/workflows/deploy.yml` 在 main 分支推送或手动触发时，会注入 D1 database_id、部署 Cloudflare Pages，并把 `AMAP_KEY`、`ADMIN_TOKEN` 同步为 Pages Secret。真实 Key 与 D1 ID 不会提交到仓库。
+`CLOUDFLARE_API_TOKEN` 需要同时具有 Cloudflare Pages 与 D1 的编辑权限，否则 CI 的播种或部署步骤会失败。
+
+3. 推送或合并到 `main` 分支，`.github/workflows/deploy.yml` 会自动执行：
+   - 检查必需 Secrets；
+   - 注入 D1 database_id；
+   - 执行 `npm run db:seed-if-empty -- --remote`（建表 + 空库播种，已有数据时跳过）；
+   - 部署 Cloudflare Pages；
+   - 把 `AMAP_KEY`、`ADMIN_TOKEN` 同步为 Pages Secrets。
+4. 也可以手动触发：GitHub Actions -> Deploy to Cloudflare Pages -> Run workflow。
+
+> 注意：GitHub Secrets 只在 GitHub Actions 运行时生效。如果部署走的是方式一（Cloudflare 直接连接 Git），GitHub Secrets 不会被使用，此时请直接在 Cloudflare Pages 里配置 Secret。
+
+### Secrets 配置位置
+
+| 部署方式 | `AMAP_KEY` / `ADMIN_TOKEN` 配置位置 |
+| --- | --- |
+| 方式一：Dashboard Git 集成 | Cloudflare Pages -> Settings -> Variables and secrets |
+| 方式二：GitHub Actions | GitHub Actions Secrets，workflow 自动同步到 Pages |
+
+### 本地开发
+
+```bash
+npm run db:init -- --local
+npm run db:seed-if-empty -- --local
+npm run dev
+```
+
+默认访问 http://localhost:8788/。
+
+本地调试管理后台时，在项目根目录创建 `.dev.vars`（已被 gitignore）并写入 `ADMIN_TOKEN=你的本地Token`；需要验证天气时同时写入 `AMAP_KEY=你的高德Key`。
 
 ### 管理后台
 
@@ -82,10 +140,12 @@ npm run dev
 
 ### 数据同步
 
-- `npm run db:sync [-- --remote]`：用本地 `js/data.json` 覆盖 D1（默认本地，远程加 `--remote`）
+- `npm run db:seed-if-empty [-- --remote]`：建表，并只在 D1 为空时写入 `js/data.json` 种子数据
+- `npm run db:sync [-- --remote]`：用本地 `js/data.json` 全量覆盖 D1（默认本地，远程加 `--remote`）
 - `npm run db:export [-- --remote]`：从 D1 导出并覆盖本地 `js/data.json`
 - 同步方向明确：`db:sync` 会覆盖 D1 当前在线修改，`db:export` 会覆盖本地文件
 - `.github/workflows/sync-d1.yml` 提供手动触发的 CI 同步，需配置 Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_D1_DATABASE_ID`
+- D1 命令按数据库名 `nav` 执行，`wrangler.toml` 中的 `database_id` 保持占位符即可，真实 ID 只在 GitHub Actions 中临时注入
 
 ## 关于天气
 

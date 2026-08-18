@@ -66,8 +66,8 @@ function loadPageData() {
             return response.json();
         })
         .then(data => {
-            if (!data || !data.pageData) {
-                throw new Error("D1 数据格式不正确或缺少 pageData。");
+            if (!data || !Array.isArray(data.pageData) || data.pageData.length === 0) {
+                throw new Error("D1 数据为空或缺少 pageData。");
             }
             return data.pageData;
         })
