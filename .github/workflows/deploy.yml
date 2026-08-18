@@ -39,9 +39,6 @@ jobs:
       - name: 初始化 D1（空库时自动播种）
         run: npm run db:seed-if-empty -- --remote
 
-      - name: 部署 Cloudflare Pages
-        run: npm run deploy
-
       - name: 同步 Pages Secrets
         run: |
           if [[ -n "$AMAP_KEY" ]]; then
@@ -53,3 +50,6 @@ jobs:
         env:
           AMAP_KEY: ${{ secrets.AMAP_KEY }}
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+
+      - name: 部署 Cloudflare Pages
+        run: npm run deploy

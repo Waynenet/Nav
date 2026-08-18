@@ -111,8 +111,8 @@ Cloudflare 官方 “Deploy to Cloudflare” 按钮目前只支持 Workers 应�
    - 检查必需 Secrets；
    - 注入 D1 database_id；
    - 执行 `npm run db:seed-if-empty -- --remote`（建表 + 空库播种，已有数据时跳过）；
-   - 部署 Cloudflare Pages；
-   - 把 `AMAP_KEY`、`ADMIN_TOKEN` 同步为 Pages Secrets。
+   - 先把 `AMAP_KEY`、`ADMIN_TOKEN` 同步为 Pages Secrets；
+   - 再部署 Cloudflare Pages，确保新部署能读到 Secret。
 4. 也可以手动触发：GitHub Actions -> Deploy to Cloudflare Pages -> Run workflow。
 
 > 注意：GitHub Secrets 只在 GitHub Actions 运行时生效。如果部署走的是方式一（Cloudflare 直接连接 Git），GitHub Secrets 不会被使用，此时请直接在 Cloudflare Pages 里配置 Secret。
